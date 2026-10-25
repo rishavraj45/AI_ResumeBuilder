@@ -48,7 +48,7 @@ const ResumeSchema = new mongoose.Schema({
 }, {timestamps: true, minimize: false});
 
 
-// using this resume model, we can the resume of any user in the database and we can also update the resume in mongodb database 
+// using this resume model, we can find the resume of any user in the database and we can also update the resume in mongodb database 
 const Resume= mongoose.model('Resume', ResumeSchema)
 
 export default Resume;
