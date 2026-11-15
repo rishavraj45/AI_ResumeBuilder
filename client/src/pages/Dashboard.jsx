@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import api from '../configs/api'
+import pdfToText from 'react-pdftotext'
 
 const Dashboard = () => {
 
@@ -18,10 +19,16 @@ const Dashboard = () => {
   const [resume, setResume] = useState(null)
   const [editResumeId, setEditResumeId] = useState('')
 
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
   const loadAllResumes = async () => {
-    setAllResumes(dummyResumeData)
+    try {
+      const {data}= await api.get('/api/users/resumes', {headers: {Authorization: token}})
+      setAllResumes(data.resumes)
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message)
+    }
   }
 
   const createResume = async (event) =>{
@@ -40,8 +47,19 @@ const Dashboard = () => {
 
   const uploadResume = async (event) => {
     event.preventDefault()
-    setShowUploadResume(false)
-    navigate(`/app/builder/res123`)
+    setIsLoading(true)
+    try {
+      const resumeText= await pdfToText(resume)
+      const {data}= await api.post('/api/ai/upload-resume', {title, resumeText}, {headers: {Authorization: token}})
+      setTitle('')
+      setResume(null)
+      setShowUploadResume(false)
+      navigate(`/app/builder/${data.resumeId}`)
+    } catch (error) {
+      toast.error(error?.response?.data?.message || error.message)
+    }
+    setIsLoading(false)
+    
   }
 
   const editTitle = async (event) => {
