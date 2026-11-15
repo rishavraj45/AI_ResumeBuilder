@@ -86,35 +86,65 @@ export const getPublicResumeById= async(req, res) => {
 
 // controller for updating a resume
 // PUT: /api/resumes/update
-export const updateResume= async(req,res) => {
+export const updateResume = async (req, res) => {
     try {
-        const userId= req.userId;
-        const {resumeId, resumeData, removeBackground}= req.body;
-        const image= req.file;
+        const userId = req.userId;
+        const { resumeId, resumeData, removeBackground } = req.body;
+        const image = req.file;
 
-        let resumeDataCopy= JSON.parse(JSON.stringify(resumeData));
+        if (!resumeId || !resumeData) {
+            return res.status(400).json({
+                message: "Missing required fields"
+            });
+        }
 
-        if(image){
+        // Parse resumeData received through FormData
+        let resumeDataCopy = JSON.parse(resumeData);
 
-            const imageBufferData = fs.createReadStream(image.path)
+        if (image) {
+            const imageBufferData = fs.createReadStream(image.path);
 
             const response = await imagekit.files.upload({
                 file: imageBufferData,
                 fileName: 'resume.png',
                 folder: 'user-resumes',
                 transformation: {
-                    pre: 'w-300,h-300,fo-face,z-0.75' + (removeBackground ? ',e-bgremove' : '')
+                    pre: 'w-300,h-300,fo-face,z-0.75' +
+                        (removeBackground === 'yes' ? ',e-bgremove' : '')
                 }
             });
 
-            resumeDataCopy.personal_info.image = response.url
+            resumeDataCopy.personal_info.image = response.url;
+
+            // Remove temporary uploaded file
+            fs.unlink(image.path, (err) => {
+                if (err) console.error("File cleanup error:", err);
+            });
         }
 
-        const resume= await Resume.findByIdAndUpdate({userId, _id: resumeId}, resumeDataCopy, {new: true})
+        // Update resume using userId and resumeId
+        const resume = await Resume.findOneAndUpdate(
+            { userId, _id: resumeId },
+            resumeDataCopy,
+            { new: true, runValidators: true }
+        );
 
-        return res.status(200).json({message: 'Saved successfully', resume})
+        if (!resume) {
+            return res.status(404).json({
+                message: "Resume not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Saved successfully',
+            resume
+        });
 
     } catch (error) {
-        return res.status(400).json({message: error.message})
+        console.error("Update Resume Error:", error);
+
+        return res.status(400).json({
+            message: error.message
+        });
     }
-}
+};
