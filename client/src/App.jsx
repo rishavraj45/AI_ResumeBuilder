@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import api from './configs/api'
 import { login, setLoading } from './app/features/authSlice'
 import {Toaster} from 'react-hot-toast'
+import ATSChecker from './pages/ATSChecker'
 
 const App = () => {
 
@@ -43,6 +44,7 @@ const App = () => {
     <Toaster />
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/ats-checker' element={<ATSChecker />} />
         <Route path='app' element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='builder/:resumeId' element={<ResumeBuilder />}/>
