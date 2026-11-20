@@ -193,7 +193,7 @@ const ATSChecker = () => {
         <div className="min-h-screen bg-slate-50">
 
             {/* Navbar */}
-            <nav className="flex items-center justify-between px-6 md:px-16 py-5 bg-white border-b border-slate-100">
+            <nav className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-16 py-5 bg-white border-b border-slate-100 shadow-sm">
 
                 <Link to="/" className="flex items-center gap-2">
                     <img src="/logo.svg" alt="Resume Logo" className="h-10" />
